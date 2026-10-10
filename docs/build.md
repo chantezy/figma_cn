@@ -11,8 +11,12 @@
 ```bash
 npm install          # 首次需要，装 electron-builder
 npm run dist         # 产出免安装的 .app → dist/mac-arm64/Figma 中文版.app
-npm run dmg          # 产出 dmg 安装包
+npm run dmg          # 产出安装包，arm64 与 x64 各一份
+                     #   → dist/Figma-CN-<版本>-arm64.dmg
+                     #   → dist/Figma-CN-<版本>-x64.dmg
 ```
+
+`npm run dmg` 会**同时出两种架构**（脚本里写的是 `--arm64 --x64`）。两个 dmg 互不通用：`arm64` 那份的 Mach-O 里只有 arm64 切片，Intel 机器上根本起不来，反过来也一样。想让一个文件通吃可以改用 `universal` 目标，代价是体积翻倍（两份合并后约 230 MB）。
 
 打包配置要点（`package.json` 的 `build` 字段）：
 
@@ -32,8 +36,9 @@ npm run dmg          # 产出 dmg 安装包
 xattr -cr "dist/mac-arm64/Figma 中文版.app"
 ```
 
-> 注意：想放到 `/Applications` 或对外分发，需要 Apple Developer ID 签名 + 公证，
-> 并在 `build.mac` 里去掉 `identity: null`。未签名的包在别人机器上会被直接拒绝打开。
+> 注意：本项目对外分发的就是**未签名包**，靠的是用户手动放行（右键 →「打开」，或
+> `xattr -cr`），Releases 上那份就是这么发出去的。想让它能**双击直接开**、不弹任何
+> 提示，才需要 Apple Developer ID 签名 + 公证，并在 `build.mac` 里去掉 `identity: null`。
 >
 > 另外：打包版和源码版共用同一个 userData 目录，**两个不能同时开**（见[故障排查第 1 条](troubleshooting.md#1-npm-start-一起就退终端什么也没有)）。
 
@@ -154,9 +159,16 @@ iconutil --convert iconset --output /tmp/check.iconset build/icon.icns && ls /tm
 
 1. 在仓库页面上点 **Releases → Draft a new release**；
 2. Tag 填版本号（例如 `v0.1.0`），标题写 `0.1.0`；
-3. 把 `dist/Figma-CN-Setup-0.1.0.exe` 拖进附件区（单个附件上限 2 GB，够用）；
+3. 把 `dist/` 里这三个文件都拖进附件区（单个附件上限 2 GB，够用）：
+
+   | 附件 | 体积 |
+   | --- | --- |
+   | `Figma-CN-Setup-0.1.0.exe` | 106 MB |
+   | `Figma-CN-0.1.0-arm64.dmg` | 123 MB |
+   | `Figma-CN-0.1.0-x64.dmg` | 126 MB |
+
 4. 发布。README 里「下载安装」一节的链接就指向这里。
 
 `.gitignore` 已经忽略了 `dist/`，正常不会误提交。
 
-> **签名提示先说在前面**：两个平台的包都没有代码签名。Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，需要点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，需要右键 →「打开」，或 `xattr -cr`。这不是包坏了，想消掉提示只能买对应的签名证书。
+> **签名提示先说在前面**：这三个包都没有代码签名。Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，需要点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，需要右键 →「打开」，或 `xattr -cr`。这不是包坏了，想消掉提示只能买对应的签名证书。

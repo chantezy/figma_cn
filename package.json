@@ -26,7 +26,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --mac --dir",
-    "dmg": "electron-builder --mac dmg",
+    "dmg": "electron-builder --mac dmg --arm64 --x64",
     "exe": "electron-builder --win",
     "sync-dict": "node scripts/sync-dict.mjs"
   },
@@ -48,7 +48,8 @@
       ],
       "icon": "build/icon.icns",
       "identity": null,
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "artifactName": "Figma-CN-${version}-${arch}.dmg"
     },
     "win": {
       "target": [

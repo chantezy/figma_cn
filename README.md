@@ -13,11 +13,14 @@
 | 平台 | 文件 | 说明 |
 | --- | --- | --- |
 | Windows (x64) | `Figma-CN-Setup-0.1.0.exe` | NSIS 向导式安装，按用户安装、不弹管理员授权 |
-| macOS (Apple Silicon) | 暂无预编译包 | 自己编译，见[自己构建](#自己构建)，差不多一条命令 |
+| macOS（Apple 芯片） | `Figma-CN-0.1.0-arm64.dmg` | 打开后把「Figma 中文版」拖进 `Applications` |
+| macOS（Intel） | `Figma-CN-0.1.0-x64.dmg` | 同上 |
 
-> ⚠️ **两个包都没有代码签名。** Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，右键 →「打开」，或者 `xattr -cr` 一下。这不是包坏了，想消掉提示只能买对应的签名证书。
+> 不确定自己的 Mac 是哪种：点左上角苹果菜单 →「关于本机」，看「芯片」一行。写着 `Apple M…` 就下 arm64，写着 `Intel` 就下 x64。**两个装错了打不开**——它们只包含对应架构的二进制。
 
-Windows 版**没有在真机上验证过**（打包是在 macOS 上交叉编译的），已知风险和应该先看的两处见 [docs/build.md](docs/build.md#没验过的地方实话)。
+> ⚠️ **三个包都没有代码签名。** Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，右键 →「打开」，或者 `xattr -cr` 一下。这不是包坏了，想消掉提示只能买对应的签名证书。
+
+macOS 版**验证过**：dmg 能挂载、架构正确、应用能正常启动、标签栏与 4379 条词条都在。Windows 版**没有在真机上验证过**（打包是在 macOS 上交叉编译的），已知风险和应该先看的两处见 [docs/build.md](docs/build.md#没验过的地方实话)。
 
 ---
 
@@ -150,7 +153,7 @@ npm start
 打安装包：
 
 ```bash
-npm run dmg      # macOS → dist/
+npm run dmg      # macOS → dist/Figma-CN-<版本>-{arm64,x64}.dmg
 npm run exe      # Windows → dist/Figma-CN-Setup-<版本>.exe
 ```
 
