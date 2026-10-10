@@ -1,26 +1,29 @@
 # Figma 中文版
 
-把 Figma 网页版封装成一个本地桌面应用，**内置界面汉化**、**带多标签栏** —— 不需要装任何浏览器扩展，双击就是中文界面。
+把 Figma 网页版封装成一个本地桌面应用，**内置界面汉化**、**带多标签栏** —— 不需要装任何浏览器扩展，打开就是中文界面。
 
 > 为什么值得做：Figma 官方界面语言只支持 English / Japanese / Korean / French / German / Spanish / Portuguese (Brazil)，**至今没有简体中文**。
 
----
+**这个仓库只提供源码，不发布编译好的安装包。** 想用的话自己跑起来，需要 Node.js（开发时用的是 v24）和 npm：
 
-## 下载安装
+```bash
+git clone https://github.com/chantezy/figma_cn.git
+cd figma_cn
+npm install
+npm start
+```
 
-[Releases](https://github.com/chantezy/figma_cn/releases) 里有编译好的安装包。
+首次启动会打开 figma.com 的登录页，登录一次即可，会话会被持久化保存，下次直接进工作区。
 
-| 平台 | 文件 | 说明 |
-| --- | --- | --- |
-| Windows (x64) | `Figma-CN-Setup-0.1.0.exe` | NSIS 向导式安装，按用户安装、不弹管理员授权 |
-| macOS（Apple 芯片） | `Figma-CN-0.1.0-arm64.dmg` | 打开后把「Figma 中文版」拖进 `Applications` |
-| macOS（Intel） | `Figma-CN-0.1.0-x64.dmg` | 同上 |
+想打一份属于自己的安装包也可以：macOS 的 dmg（arm64 / x64 两种架构）和 Windows 的 exe 都支持，在 macOS 上就能交叉编译出 Windows 包，不需要 Wine。完整的打包参数、图标替换见 [docs/build.md](docs/build.md)。
 
-> 不确定自己的 Mac 是哪种：点左上角苹果菜单 →「关于本机」，看「芯片」一行。写着 `Apple M…` 就下 arm64，写着 `Intel` 就下 x64。**两个装错了打不开**——它们只包含对应架构的二进制。
-
-> ⚠️ **三个包都没有代码签名。** Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，右键 →「打开」，或者 `xattr -cr` 一下。这不是包坏了，想消掉提示只能买对应的签名证书。
-
-macOS 版**验证过**：dmg 能挂载、架构正确、应用能正常启动、标签栏与 4379 条词条都在。Windows 版**没有在真机上验证过**（打包是在 macOS 上交叉编译的），已知风险和应该先看的两处见 [docs/build.md](docs/build.md#没验过的地方实话)。
+> 国内网络下 `npm install` 直连 GitHub 实测只有 2.3 KB/s，先设好镜像再装：
+>
+> ```bash
+> ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ \
+> ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ \
+> npm install
+> ```
 
 ---
 
@@ -137,38 +140,6 @@ npm run sync-dict -- --dry-run # 只看差异，一个字节都不写
 
 ---
 
-## 自己构建
-
-需要 Node.js（开发时用的是 v24）和 npm。
-
-```bash
-git clone https://github.com/chantezy/figma_cn.git
-cd figma_cn
-npm install
-npm start
-```
-
-首次启动会打开 figma.com 的登录页，登录一次即可，会话会被持久化保存，下次直接进工作区。
-
-打安装包：
-
-```bash
-npm run dmg      # macOS → dist/Figma-CN-<版本>-{arm64,x64}.dmg
-npm run exe      # Windows → dist/Figma-CN-Setup-<版本>.exe
-```
-
-国内网络下 `npm install` 和 `npm run exe` 都建议先设好镜像环境变量，否则直连 GitHub 实测只有 2.3 KB/s：
-
-```bash
-ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/ \
-ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/ \
-npm install
-```
-
-完整的打包参数、图标替换、发版流程见 [docs/build.md](docs/build.md)。启动不了、没有汉化、标签行为不对，见 [docs/troubleshooting.md](docs/troubleshooting.md)。
-
----
-
 ## 许可与致谢
 
 本项目以 **GPL-3.0** 发布，见 [LICENSE](LICENSE)。
@@ -186,5 +157,5 @@ npm install
 | 文档 | 内容 |
 | --- | --- |
 | [docs/implementation.md](docs/implementation.md) | 窗口模型、目录结构、标签栏与汉化的实现、拖动换位的取舍、内存实测 |
-| [docs/build.md](docs/build.md) | 打包 macOS / Windows、镜像配置、换图标、发版 |
+| [docs/build.md](docs/build.md) | 打包 macOS / Windows、镜像配置、换图标 |
 | [docs/troubleshooting.md](docs/troubleshooting.md) | 九条常见故障的排查步骤 |
