@@ -1,0 +1,55 @@
+Figma 中文版（figma_cn）
+Copyright (C) 2026 Figma 中文版 contributors
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+完整许可证正文见同目录的 LICENSE。
+
+
+========================================================================
+第三方代码
+========================================================================
+
+本项目包含来自以下开源项目的代码与数据。它们各自的许可证同样适用于
+本项目的相关部分，分发时请一并遵守。
+
+------------------------------------------------------------------------
+FigmaCN
+------------------------------------------------------------------------
+
+  上游仓库：https://github.com/Figma-Cool/figmaCN
+  许可证：  GNU General Public License v3.0
+
+  本仓库中位于 vendor/figmacn/ 的全部内容均来自该项目：
+
+    vendor/figmacn/content.js          汉化引擎（MutationObserver +
+                                       精确/通配/兜底三层匹配）
+    vendor/figmacn/translations.json   4379 条汉化词条
+    vendor/figmacn/LICENSE             上游附带的 GPL-3.0 正文
+
+  这些文件由 scripts/sync-dict.mjs 从上游同步，本地有改动会在下次同步时
+  被覆盖。关于本项目对引擎做的那一处修改（去掉 chrome.runtime 依赖），
+  见 docs/implementation.md 的「界面汉化是怎么处理的」。
+
+  上游的版权声明以仓库内 LICENSE 与上游仓库自身为准。本项目与上游项目
+  没有隶属关系，也不是它的官方发行版。
+
+------------------------------------------------------------------------
+Electron
+------------------------------------------------------------------------
+
+  上游仓库：https://github.com/electron/electron
+  许可证：  MIT
+
+  作为运行时依赖使用，不打进本仓库。

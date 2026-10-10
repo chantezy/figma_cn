@@ -1,0 +1,274 @@
+/* 标签栏外观。对齐官方 Figma 桌面版：扁平的浅灰条 + 白色活动标签。
+   下面是几个必须守住的约定，改样式时别破坏：
+
+   1. body 必须不透明。窗口自己的页面会被系统同步 resize，而标签视图由 JS 回调
+      重新定位，两者可能差一帧；那一帧里会从标签区域露出这一层的底色。让底色
+      和标签条同色 + 和窗口 backgroundColor 同色，那一帧就看不出来。
+   2. #strip 是拖拽区，里面每一个可点控件都必须显式 no-drag，
+      而控件右边的空白要留成拖拽区，否则窗口没地方拖。 */
+
+:root {
+  --strip-h: 40px;
+  --bar-bg: #ececec;
+  --tab-active-bg: #ffffff;
+  --tab-hover-bg: rgba(0, 0, 0, 0.045);
+  --text: #2b2b2b;
+  --text-dim: #6f6f6f;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  --traffic-w: 78px;
+  /* 标签条右边缘的留白。macOS 上就是个边距；Windows 上要留出系统画的
+     最小化/最大化/关闭（见 body.win） */
+  --caption-w: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue",
+    Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bar-bg);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- 标签条 */
+
+#strip {
+  position: relative;
+  height: var(--strip-h);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: var(--caption-w);
+  background: var(--bar-bg);
+  /* 整条可拖拽 */
+  -webkit-app-region: drag;
+}
+
+/* ---------------------------------------------------------------- Windows */
+/* Windows 的窗口按钮由系统画在右上角（主进程开了 titleBarOverlay），两个后果：
+   左边没有红绿灯那块留白（收掉），右边要空出按钮的宽度（否则挤到按钮底下）。 */
+body.win {
+  --traffic-w: 0px;
+}
+
+body.win #strip {
+  /* 按钮多宽是按系统缩放变的，我们不知道 —— 让 Chromium 报给我们（开了
+     titleBarOverlay 的窗口里才有 titlebar-area-width 这个值）。问不到就退回
+     138px = 三个按钮在 100% 缩放下的标准宽度，也就是高 DPI 下会窄一点，
+     多出来的那截是右边那条纯拖拽区，不碍事。 */
+  padding-right: calc(100% - env(titlebar-area-width, calc(100% - 138px)));
+}
+
+#traffic-gap {
+  flex: 0 0 var(--traffic-w);
+  height: 100%;
+}
+
+/* 原生全屏下这块留白（--traffic-w，78px）保持不变。曾经想把它缩到 12px
+   换成可用空间，理由是全屏后红绿灯就没了、「不然是死区」。改回来了，因为
+   前提是错的：macOS 全屏只是把红绿灯**藏起来**，鼠标往屏幕顶部一推它们就
+   滑出来，而那一带正好压在首页按钮上。78px 的空位是看得见的瑕疵，首页按钮
+   在悬停瞬间点不动是真正的交互故障 —— 两害相权取前者。
+   所以 body.native-fullscreen 这个类目前只作状态标记，不带样式。 */
+
+/* 演示模式：整条收起（标签视图此时已经扩到 y=0 铺满窗口） */
+body.chrome-hidden #strip {
+  display: none;
+}
+
+#tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 0 1 auto;
+  -webkit-app-region: no-drag;
+  /* 这里**不能**有 overflow: hidden。本来是防「标签太多挤出去」，但 #tabs 是
+     内容撑开的（flex: 0 1 auto），正常情况下根本没有外溢内容可裁；而拖动换位时
+     被拖的标签要靠 transform 滑到别的槽位去，一旦有裁剪，它会刚离开自己的格子就被
+     切掉半个。挤不下时由窗口边缘来裁就够了。 */
+}
+
+/* 标签右边到窗口右边的空白：保持拖拽，并吃掉剩余宽度。
+   它是最后一个元素，所以标签会紧跟在首页按钮后面，剩下的全归拖拽区。 */
+#drag-fill {
+  flex: 1 1 auto;
+  height: 100%;
+  min-width: 12px;
+  -webkit-app-region: drag;
+}
+
+/* ---------------------------------------------------------------- 图标按钮 */
+
+.icon-btn {
+  -webkit-app-region: no-drag;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: default;
+  padding: 0;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.icon-btn:hover {
+  background: var(--tab-hover-bg);
+  color: var(--text);
+}
+
+.icon-btn:active {
+  background: rgba(0, 0, 0, 0.09);
+}
+
+/* 首页按钮在显示首页时也高亮 —— 它是标签栏上「你现在在哪一页」的唯一指示，
+   没有这个的话停在 recents 时整条标签栏没有任何一处是亮的。 */
+#home.active {
+  background: rgba(0, 0, 0, 0.09);
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------- 标签 */
+
+.tab {
+  -webkit-app-region: no-drag;
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 54px;
+  max-width: 200px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px 0 9px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-dim);
+  overflow: hidden;
+  /* transform 这一项是给拖动换位用的：让位的标签滑过去要有过渡，
+     被拖的那个由 .dragging 覆盖成 none（跟手，不能有过渡）。 */
+  transition: background-color 0.12s ease, color 0.12s ease, transform 0.14s ease;
+}
+
+.tab:hover {
+  background: var(--tab-hover-bg);
+  color: var(--text);
+}
+
+.tab.active {
+  background: var(--tab-active-bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+/* ---------------------------------------------------------- 拖动换位 */
+
+/* 被拖起来的那个：跟指针 1:1，所以不能有过渡；阴影比活动标签更重，
+   才能在「活动标签本身就是白的」这种情况下仍然看得出哪个是被拎着的。 */
+.tab.dragging {
+  transition: none;
+  z-index: 3;
+  color: var(--text);
+  background: var(--tab-active-bg);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.22), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+  cursor: grabbing;
+}
+
+body.reordering {
+  cursor: grabbing;
+}
+
+/* 拖动时指针会一路扫过其他标签，别让它们一个个亮起来 —— 那会让人以为
+   「经过 = 已经选中」，而实际起作用的是被拎着的那张票落在哪个槽位。 */
+body.reordering .tab:not(.dragging):hover {
+  background: transparent;
+  color: var(--text-dim);
+}
+
+body.reordering .tab.active:not(.dragging):hover {
+  background: var(--tab-active-bg);
+  color: var(--text);
+}
+
+.tab .favicon {
+  flex: 0 0 auto;
+  width: 11px;
+  height: 16px;
+  display: block;
+}
+
+/* 这里**故意**没有 .tab.loading 之类针对图标的样式。图标是本地内联 SVG，
+   标签一出现它就该是满血的；任何「加载中」外观（转圈、压暗、半透明）都会让用户
+   以为图标还没加载出来，而这正是之前那个「每次打开都要等图标」的根子。 */
+
+.tab .title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.tab .close {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-right: -3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: default;
+  /* 只有活动标签、或鼠标停在标签上时才露出来 */
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.1s ease, background-color 0.1s ease;
+}
+
+.tab.active .close,
+.tab:hover .close {
+  visibility: visible;
+  opacity: 0.75;
+}
+
+.tab .close:hover {
+  background: rgba(0, 0, 0, 0.12);
+  opacity: 1;
+}
+
+/* 原来这里有一个 .spinner + @keyframes tab-spin：标签加载时用转圈顶掉图标。
+   后来加载态改成压暗图标，现在压暗也去掉了 —— 加载态不再影响图标半分。
+   加载中的提示只剩标题那行「加载中…」。 */
+
+/* 崩了：图标换成感叹号，标题变灰 */
+.tab.crashed .title {
+  color: #b3261e;
+}
+
+/* 这里原来是空状态卡（「没有打开的标签页」+ 一个打开首页的按钮）的样式。
+   首页改成常驻底页之后它永远不会露面（关掉最后一个标签就是回到首页），
+   连同 HTML 和 JS 里的引用一起删掉了。 */

@@ -1,0 +1,79 @@
+{
+  "name": "figma-cn-app",
+  "productName": "Figma 中文版",
+  "version": "0.1.0",
+  "private": true,
+  "description": "把 Figma 网页版封装成桌面应用：内置界面汉化 + 多标签栏，macOS 与 Windows 可用",
+  "main": "src/main.js",
+  "license": "GPL-3.0",
+  "author": "Figma 中文版 contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chantezy/figma_cn.git"
+  },
+  "homepage": "https://github.com/chantezy/figma_cn#readme",
+  "bugs": {
+    "url": "https://github.com/chantezy/figma_cn/issues"
+  },
+  "keywords": [
+    "figma",
+    "electron",
+    "chinese",
+    "localization",
+    "desktop",
+    "tabs"
+  ],
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac --dir",
+    "dmg": "electron-builder --mac dmg",
+    "exe": "electron-builder --win",
+    "sync-dict": "node scripts/sync-dict.mjs"
+  },
+  "build": {
+    "appId": "cool.figma.cn",
+    "productName": "Figma 中文版",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "vendor/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg"
+      ],
+      "icon": "build/icon.icns",
+      "identity": null,
+      "hardenedRuntime": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Figma-CN-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Figma 中文版",
+      "deleteAppDataOnUninstall": false
+    }
+  },
+  "devDependencies": {
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
+  }
+}
