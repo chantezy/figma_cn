@@ -1,6 +1,8 @@
-# 打包与发布
+# 打包
 
 怎么用这个应用看 [README](../README.md)，实现原理看 [implementation.md](implementation.md)，出问题看 [troubleshooting.md](troubleshooting.md)。
+
+这里讲的都是**给自己打一份本地用的包**。本项目不对外发布编译好的安装包，所以没有发版流程。打出来的东西全在 `dist/` 里，`.gitignore` 已经忽略它——顺带一提，单是那个 Windows 包就有 106 MB，超过 GitHub 单文件 100 MB 的硬上限，本来也提交不进去。
 
 ---
 
@@ -36,9 +38,10 @@ npm run dmg          # 产出安装包，arm64 与 x64 各一份
 xattr -cr "dist/mac-arm64/Figma 中文版.app"
 ```
 
-> 注意：本项目对外分发的就是**未签名包**，靠的是用户手动放行（右键 →「打开」，或
-> `xattr -cr`），Releases 上那份就是这么发出去的。想让它能**双击直接开**、不弹任何
-> 提示，才需要 Apple Developer ID 签名 + 公证，并在 `build.mac` 里去掉 `identity: null`。
+> 注意：自己打的包也**没有代码签名**。自己机器上双击一般能开（本地构建不会被打上
+> 隔离属性）；把 `.app` 拷给别人、或经网络传输之后会被 Gatekeeper 拦，右键 →「打开」
+> 或 `xattr -cr` 放行一次即可。想让别人**双击直接开**、不弹任何提示，才需要 Apple
+> Developer ID 签名 + 公证，并在 `build.mac` 里去掉 `identity: null`。
 >
 > 另外：打包版和源码版共用同一个 userData 目录，**两个不能同时开**（见[故障排查第 1 条](troubleshooting.md#1-npm-start-一起就退终端什么也没有)）。
 
@@ -88,6 +91,10 @@ npm run exe
 - **非静默向导**（`oneClick: false`）：可自选安装目录，可建开始菜单/桌面快捷方式；
 - **按用户安装**（`perMachine: false`）：不弹管理员授权；
 - **卸载不删数据**（`deleteAppDataOnUninstall: false`）：标签存档和缓存在 `%APPDATA%\Figma 中文版\`，卸载重装后标签还在 —— 和 macOS 版行为一致。Windows 版和 macOS 版的数据各自独立，不共享。
+
+> 这个 exe 同样**没有代码签名**。在打包它的那台机器上直接跑没事；一旦拷到别的电脑（
+> 尤其是从网络下载过去），SmartScreen 会弹「Windows 已保护你的电脑」，点「更多信息」
+> →「仍要运行」即可。想彻底消掉提示需要买代码签名证书。
 
 ### 没验过的地方（实话）
 
@@ -150,25 +157,3 @@ iconutil --convert iconset --output /tmp/check.iconset build/icon.icns && ls /tm
 > ```
 > 两个哈希一致就说明打包没问题。这时候把 `.app` 挪个位置（或改个名再改回来）逼 Finder 重新读，
 > 实在不行 `killall Dock`。
-
----
-
-## 发布
-
-**安装包不要提交进仓库。** GitHub 单文件硬上限 100 MB，而 `Figma-CN-Setup-0.1.0.exe` 有 106 MB，`git push` 会被直接拒绝。走 Releases 发布：
-
-1. 在仓库页面上点 **Releases → Draft a new release**；
-2. Tag 填版本号（例如 `v0.1.0`），标题写 `0.1.0`；
-3. 把 `dist/` 里这三个文件都拖进附件区（单个附件上限 2 GB，够用）：
-
-   | 附件 | 体积 |
-   | --- | --- |
-   | `Figma-CN-Setup-0.1.0.exe` | 106 MB |
-   | `Figma-CN-0.1.0-arm64.dmg` | 123 MB |
-   | `Figma-CN-0.1.0-x64.dmg` | 126 MB |
-
-4. 发布。README 里「下载安装」一节的链接就指向这里。
-
-`.gitignore` 已经忽略了 `dist/`，正常不会误提交。
-
-> **签名提示先说在前面**：这三个包都没有代码签名。Windows 上双击会弹 SmartScreen「Windows 已保护你的电脑」，需要点「更多信息」→「仍要运行」；macOS 上会被 Gatekeeper 拦，需要右键 →「打开」，或 `xattr -cr`。这不是包坏了，想消掉提示只能买对应的签名证书。

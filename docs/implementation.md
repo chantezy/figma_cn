@@ -50,7 +50,7 @@ figma_cn/
 ├── README.md
 ├── docs/
 │   ├── implementation.md    # 本文
-│   ├── build.md             # 打包与发布
+│   ├── build.md             # 打包
 │   └── troubleshooting.md   # 故障排查
 ├── build/                   # 应用图标（electron-builder 的默认资源目录，不进 asar）
 │   ├── icon.icns            #   打包用：给 macOS 束的容器格式
